@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style type="text/css">
+            #b0 {
+                background-color: gray;
+                width: 78px;
+                height: 78px;
+                position:absolute;
+                left:42px;
+                top:2px;
+            }
+            #v0 {
+                background-color: gray;
+                width: 38px;
+                height: 78px;
+                position:absolute;
+                left:2px;
+                top:2px;
+            }
+            #v1 {
+                background-color: gray;
+                width: 38px;
+                height: 78px;
+                position:absolute;
+                left:122px;
+                top:2px;
+            }
+            #v2 {
+                background-color: gray;
+                width: 38px;
+                height: 78px;
+                position:absolute;
+                left:2px;
+                top:82px;
+            }
+            #v3 {
+                background-color: gray;
+                width: 38px;
+                height: 78px;
+                position:absolute;
+                left:122px;
+                top:82px;
+            }
+            #h0 {
+                background-color: gray;
+                width: 78px;
+                height: 38px;
+                position:absolute;
+                left:42px;
+                top:82px;
+            }
+            #s0 {
+                background-color: gray;
+                width: 38px;
+                height: 38px;
+                position:absolute;
+                left:42px;
+                top:122px;
+            }
+            #s1 {
+                background-color: gray;
+                width: 38px;
+                height: 38px;
+                position:absolute;
+                left:82px;
+                top:122px;
+            }
+            #s2 {
+                background-color: gray;
+                width: 38px;
+                height: 38px;
+                position:absolute;
+                left:2px;
+                top:162px;
+            }
+            #s3 {
+                background-color: gray;
+                width: 38px;
+                height: 38px;
+                position:absolute;
+                left:122px;
+                top:162px;
+            }
+        </style>
+        <script>
+            var board = [
+                ["v0","b0","b0","v1"],
+                ["v0","b0","b0","v1"],
+                ["v2","h0","h0","v3"],
+                ["v2","s0","s1","v3"],
+                ["s2","__","__","s3"]
+            ];
+            var moving = false;
+            var last_id = null;
+            var last_move = null;
+            function down(e) {
+                if (moving) {
+                    return;
+                }
+                var item = e.srcElement;
+                var minx = 99;
+                var miny = 99;
+                var maxx = -1;
+                var maxy = -1;
+                for (y=0; y<5; y++) {
+                    for (x=0; x<4; x++) {
+                        if (board[y][x] == item.id) {
+                            minx = Math.min(minx, x);
+                            miny = Math.min(miny, y);
+                            maxx = Math.max(maxx, x);
+                            maxy = Math.max(maxy, y);
+                        }
+                    }
+                }
+                if (minx > maxx) {
+                    return;
+                }
+                var left = true;
+                var right = true;
+                var up = true;
+                var down = true;
+                for (y=miny; y<=maxy; y++) {
+                    if (minx <= 0 || board[y][minx-1] != "__") {
+                        left = false;
+                    }
+                    if (maxx >= 3 || board[y][maxx+1] != "__") {
+                        right = false;
+                    }
+                }
+                for (x=minx; x<=maxx; x++) {
+                    if (miny <= 0 || board[miny-1][x] != "__") {
+                        up = false;
+                    }
+                    if (maxy >= 4 || board[maxy+1][x] != "__") {
+                        down = false;
+                    }
+                }
+                var count = 0;
+                if (left) {
+                    count += 1;
+                }
+                if (right) {
+                    count += 1;
+                }
+                if (up) {
+                    count += 1;
+                }
+                if (down) {
+                    count += 1;
+                }
+                if (last_id == item.id && count > 1) {
+                    if (last_move == "left") {
+                        right = false;
+                    } else if (last_move == "right") {
+                        left = false;
+                    } else if (last_move == "up") {
+                        down = false;
+                    } else if (last_move == "down") {
+                        up = false;
+                    }
+                }
+                last_id = null;
+                last_move = null;
+                var dx = 0;
+                var dy = 0;
+                if (left) {
+                    dx = -1;
+                    last_id = item.id;
+                    last_move = "left";
+                } else if (right) {
+                    dx = 1;
+                    last_id = item.id;
+                    last_move = "right";
+                } else if (up) {
+                    dy = -1;
+                    last_id = item.id;
+                    last_move = "up";
+                } else if (down) {
+                    dy = 1;
+                    last_id = item.id;
+                    last_move = "down";
+                } else {
+                    return;
+                }
+                moving = true;
+                var start = null;
+                function step(timestamp) {
+                    if (!start) start = timestamp;
+                    var progress = Math.min((timestamp - start) / 150, 1);
+                    item.style.left = (progress * dx + minx) * 40 + 2 + 'px';
+                    item.style.top = (progress * dy + miny) * 40 + 2 + 'px';
+                    if (progress < 1) {
+                        window.requestAnimationFrame(step);
+                    } else {
+                        for (y=miny; y<=maxy; y++) {
+                            for (x=minx; x<=maxx; x++) {
+                                board[y][x] = "__";
+                            }
+                        }
+                        for (y=miny; y<=maxy; y++) {
+                            for (x=minx; x<=maxx; x++) {
+                                board[y+dy][x+dx] = item.id;
+                            }
+                        }
+                        item = null;
+                        moving = false;
+                    }
+                }
+                window.requestAnimationFrame(step);
+            }
+        </script>
+    </head>
+    <body>
+        <div onmousedown="down(event)">
+            <div id="b0"></div>
+            <div id="v0"></div>
+            <div id="v1"></div>
+            <div id="v2"></div>
+            <div id="v3"></div>
+            <div id="h0"></div>
+            <div id="s0"></div>
+            <div id="s1"></div>
+            <div id="s2"></div>
+            <div id="s3"></div>
+        </div>
+    </body>
+</html>
