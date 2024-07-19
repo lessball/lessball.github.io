@@ -1,228 +1,203 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <style type="text/css">
-            #b0 {
-                background-color: gray;
-                width: 198px;
-                height: 198px;
-                position:absolute;
-                left:102px;
-                top:2px;
+<head>
+	<title>blocks</title>
+	<meta charset="utf-8">
+</head>
+<style type="text/css">
+    #board {
+        position: relative;
+        width: min(72vh, 90vw);
+        height: min(90vh, 112.5vw);
+        font-size: min(1vh, 1.25vw);
+    }
+    .block {
+        position: absolute;
+        border-radius: 1em;
+        transition-duration: 0.1s;
+        box-shadow: 0.25em 0.25em 1em rgba(0,0,0,0.5);
+    }
+    .block:hover {
+        background-color:orange;
+    }
+    .block:active {
+        background-color:orange;
+    }
+    #b0 {
+        width: 49%;
+        height: 39%;
+        left: 25%;
+        top: 0%;
+    }
+    #v0 {
+        width: 24%;
+        height: 39%;
+        left: 0%;
+        top: 0%;
+    }
+    #v1 {
+        width: 24%;
+        height: 39%;
+        left: 75%;
+        top: 0%;
+    }
+    #v2 {
+        width: 24%;
+        height: 39%;
+        left: 0%;
+        top: 40%;
+    }
+    #v3 {
+        width: 24%;
+        height: 39%;
+        left: 75%;
+        top: 40%;
+    }
+    #h0 {
+        width: 49%;
+        height: 19%;
+        left: 25%;
+        top: 40%;
+    }
+    #s0 {
+        width: 24%;
+        height: 19%;
+        left: 25%;
+        top: 60%;
+    }
+    #s1 {
+        width: 24%;
+        height: 19%;
+        left: 50%;
+        top: 60%;
+    }
+    #s2 {
+        width: 24%;
+        height: 19%;
+        left: 0%;
+        top: 80%;
+    }
+    #s3 {
+        width: 24%;
+        height: 19%;
+        left: 75%;
+        top: 80%;
+    }
+</style>
+<body>
+    <div id="board">
+        <div id="b0" class="block"></div>
+        <div id="v0" class="block"></div>
+        <div id="v1" class="block"></div>
+        <div id="v2" class="block"></div>
+        <div id="v3" class="block"></div>
+        <div id="h0" class="block"></div>
+        <div id="s0" class="block"></div>
+        <div id="s1" class="block"></div>
+        <div id="s2" class="block"></div>
+        <div id="s3" class="block"></div>
+    </div>
+</body>
+<script>
+    let board = [
+        ["v0","b0","b0","v1"],
+        ["v0","b0","b0","v1"],
+        ["v2","h0","h0","v3"],
+        ["v2","s0","s1","v3"],
+        ["s2","__","__","s3"]
+    ];
+    let select_id = null;
+    let start_x = 0;
+    let start_y = 0;
+    const board_element = document.getElementById("board");
+    function mousemove(clientX, clientY) {
+        if (select_id == null) {
+            return;
+        }
+        const dx = clientX - start_x;
+        const dy = clientY - start_y;
+        let move_x = 0;
+        let move_y = 0;
+        if (Math.abs(dx) < Math.abs(dy) * 0.8) {
+            if (dy < -5) {
+                move_y = -1;
+            } else if (dy > 5) {
+                move_y = 1;
             }
-            #v0 {
-                background-color: gray;
-                width: 98px;
-                height: 198px;
-                position:absolute;
-                left:2px;
-                top:2px;
+        } else if (Math.abs(dy) < Math.abs(dx) * 0.8) {
+            if (dx < -5) {
+                move_x = -1;
+            } else if (dx > 5) {
+                move_x = 1;
             }
-            #v1 {
-                background-color: gray;
-                width: 98px;
-                height: 198px;
-                position:absolute;
-                left:302px;
-                top:2px;
-            }
-            #v2 {
-                background-color: gray;
-                width: 98px;
-                height: 198px;
-                position:absolute;
-                left:2px;
-                top:202px;
-            }
-            #v3 {
-                background-color: gray;
-                width: 98px;
-                height: 198px;
-                position:absolute;
-                left:302px;
-                top:202px;
-            }
-            #h0 {
-                background-color: gray;
-                width: 198px;
-                height: 98px;
-                position:absolute;
-                left:102px;
-                top:202px;
-            }
-            #s0 {
-                background-color: gray;
-                width: 98px;
-                height: 98px;
-                position:absolute;
-                left:102px;
-                top:302px;
-            }
-            #s1 {
-                background-color: gray;
-                width: 98px;
-                height: 98px;
-                position:absolute;
-                left:202px;
-                top:302px;
-            }
-            #s2 {
-                background-color: gray;
-                width: 98px;
-                height: 98px;
-                position:absolute;
-                left:2px;
-                top:402px;
-            }
-            #s3 {
-                background-color: gray;
-                width: 98px;
-                height: 98px;
-                position:absolute;
-                left:302px;
-                top:402px;
-            }
-        </style>
-        <script>
-            var board = [
-                ["v0","b0","b0","v1"],
-                ["v0","b0","b0","v1"],
-                ["v2","h0","h0","v3"],
-                ["v2","s0","s1","v3"],
-                ["s2","__","__","s3"]
-            ];
-            var moving = false;
-            var last_id = null;
-            var last_move = null;
-            function down(e) {
-                if (moving) {
-                    return;
-                }
-                var item = e.srcElement;
-                var minx = 99;
-                var miny = 99;
-                var maxx = -1;
-                var maxy = -1;
-                for (y=0; y<5; y++) {
-                    for (x=0; x<4; x++) {
-                        if (board[y][x] == item.id) {
-                            minx = Math.min(minx, x);
-                            miny = Math.min(miny, y);
-                            maxx = Math.max(maxx, x);
-                            maxy = Math.max(maxy, y);
-                        }
+        }
+        if (move_x == 0 && move_y == 0) {
+            return;
+        }
+        for (let y = 0; y < 5; y++) {
+            for (let x = 0; x < 4; x++) {
+                if (board[y][x] == select_id) {
+                    const tx = x + move_x;
+                    const ty = y + move_y;
+                    if (tx < 0 || tx >= 4
+                        || ty < 0 || ty >= 5
+                        || (board[ty][tx] != "__" && board[ty][tx] != select_id)
+                    ) {
+                        return;
                     }
                 }
-                if (minx > maxx) {
-                    return;
-                }
-                var left = true;
-                var right = true;
-                var up = true;
-                var down = true;
-                for (y=miny; y<=maxy; y++) {
-                    if (minx <= 0 || board[y][minx-1] != "__") {
-                        left = false;
-                    }
-                    if (maxx >= 3 || board[y][maxx+1] != "__") {
-                        right = false;
-                    }
-                }
-                for (x=minx; x<=maxx; x++) {
-                    if (miny <= 0 || board[miny-1][x] != "__") {
-                        up = false;
-                    }
-                    if (maxy >= 4 || board[maxy+1][x] != "__") {
-                        down = false;
-                    }
-                }
-                var count = 0;
-                if (left) {
-                    count += 1;
-                }
-                if (right) {
-                    count += 1;
-                }
-                if (up) {
-                    count += 1;
-                }
-                if (down) {
-                    count += 1;
-                }
-                if (last_id == item.id && count > 1) {
-                    if (last_move == "left") {
-                        right = false;
-                    } else if (last_move == "right") {
-                        left = false;
-                    } else if (last_move == "up") {
-                        down = false;
-                    } else if (last_move == "down") {
-                        up = false;
-                    }
-                }
-                last_id = null;
-                last_move = null;
-                var dx = 0;
-                var dy = 0;
-                if (left) {
-                    dx = -1;
-                    last_id = item.id;
-                    last_move = "left";
-                } else if (right) {
-                    dx = 1;
-                    last_id = item.id;
-                    last_move = "right";
-                } else if (up) {
-                    dy = -1;
-                    last_id = item.id;
-                    last_move = "up";
-                } else if (down) {
-                    dy = 1;
-                    last_id = item.id;
-                    last_move = "down";
-                } else {
-                    return;
-                }
-                moving = true;
-                var start = null;
-                function step(timestamp) {
-                    if (!start) start = timestamp;
-                    var progress = Math.min((timestamp - start) / 150, 1);
-                    item.style.left = (progress * dx + minx) * 100 + 2 + 'px';
-                    item.style.top = (progress * dy + miny) * 100 + 2 + 'px';
-                    if (progress < 1) {
-                        window.requestAnimationFrame(step);
-                    } else {
-                        for (y=miny; y<=maxy; y++) {
-                            for (x=minx; x<=maxx; x++) {
-                                board[y][x] = "__";
-                            }
-                        }
-                        for (y=miny; y<=maxy; y++) {
-                            for (x=minx; x<=maxx; x++) {
-                                board[y+dy][x+dx] = item.id;
-                            }
-                        }
-                        item = null;
-                        moving = false;
-                    }
-                }
-                window.requestAnimationFrame(step);
             }
-        </script>
-    </head>
-    <body>
-        <div onmousedown="down(event)">
-            <div id="b0"></div>
-            <div id="v0"></div>
-            <div id="v1"></div>
-            <div id="v2"></div>
-            <div id="v3"></div>
-            <div id="h0"></div>
-            <div id="s0"></div>
-            <div id="s1"></div>
-            <div id="s2"></div>
-            <div id="s3"></div>
-        </div>
-    </body>
+        }
+        let min_x = 9;
+        let min_y = 9;
+        for (let y = 0; y < 5; y++) {
+            let ty = move_y > 0 ? 4 - y : y;
+            for (let x = 0; x < 4; x++) {
+                let tx = move_x > 0 ? 3 - x : x;
+                if (board[ty][tx] == select_id) {
+                    board[ty + move_y][tx + move_x] = select_id;
+                    board[ty][tx] = "__";
+                    min_x = Math.min(min_x, tx + move_x);
+                    min_y = Math.min(min_y, ty + move_y);
+                }
+            }
+        }
+        console.log(board);
+        const block = document.getElementById(select_id)
+        block.style.left = (min_x * 25) + "%";
+        block.style.top = (min_y * 20) + "%";
+        select_id = null;
+    }
+    function mouseup() {
+        select_id = null;
+    }
+    board_element.addEventListener("mousedown", e => {
+        if (e.srcElement.className == "block") {
+            select_id = e.srcElement.id;
+            start_x = e.clientX;
+            start_y = e.clientY;
+        }
+    });
+    board_element.addEventListener("touchstart", e => {
+        let touch = e.touches[0];
+        if (touch.target.className == "block") {
+            select_id = touch.target.id;
+            start_x = touch.clientX;
+            start_y = touch.clientY;
+        }
+    });
+    board_element.addEventListener("mousemove", e => {
+        mousemove(e.clientX, e.clientY);
+    });
+    board_element.addEventListener("touchmove", e => {
+        let touch = e.touches[0];
+        if (touch) {
+            e.preventDefault();
+            mousemove(touch.clientX, touch.clientY);
+        }
+    });
+    board_element.addEventListener("mouseup", mouseup);
+    board_element.addEventListener("mouseleave", mouseup);
+    board_element.addEventListener("touchend", mouseup);
+    board_element.addEventListener("touchcancel", mouseup);
+</script>
 </html>
